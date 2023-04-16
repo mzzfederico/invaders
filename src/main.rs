@@ -7,16 +7,18 @@ fn main() -> Result <(), Box<dyn Error>> {
     // Gets how many lines the player wants
     let args: Vec<String> = env::args().collect();
     let mut enemy_lines = 4;
-    match args[1].parse::<u32>() {
-        Ok(lines)   => {
-            if lines > 1 && lines < 7 {
-                enemy_lines = lines;
+    if args.len() == 2 {
+        match args[1].parse::<u32>() {
+            Ok(lines)   => {
+                if lines > 1 && lines < 9 {
+                    enemy_lines = lines;
+                }
+            },
+            Err(_) => {
+                enemy_lines = 4;
             }
-        },
-        Err(_) => {
-            enemy_lines = 4;
-        }
-    };
+        };
+    }
 
     // Setting up sounds
     let mut audio = Audio::new();
