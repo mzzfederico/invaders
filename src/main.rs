@@ -1,9 +1,22 @@
-use std::{error::Error, io, time::{Duration, Instant}, sync::mpsc, thread};
+use std::{error::Error, io, time::{Duration, Instant}, sync::mpsc, thread, env};
 use crossterm::{terminal::{self, EnterAlternateScreen, LeaveAlternateScreen}, ExecutableCommand, cursor::{Hide, Show}, event::{self, Event, KeyCode}};
 use invaders::{render, frame::{new_frame, Drawable}, player::Player, invaders::Invaders};
 use rusty_audio::Audio;
 
 fn main() -> Result <(), Box<dyn Error>> {
+    let args: Vec<String> = env::args().collect();
+    let mut enemy_lines = 4;
+    match args[1].parse::<u32>() {
+        Ok(lines)   => {
+            if lines > 1 && lines < 7 {
+                enemy_lines = lines;
+            }
+        },
+        Err(_) => {
+            enemy_lines = 4;
+        }
+    };
+
     let mut audio = Audio::new();
     audio.add("explode", "explode.wav");
     audio.add("lose", "lose.wav");
@@ -39,7 +52,7 @@ fn main() -> Result <(), Box<dyn Error>> {
     // Game loop
     let mut player = Player::new();
     let mut instant = Instant::now();
-    let mut invaders = Invaders::new();
+    let mut invaders = Invaders::new(enemy_lines as usize);
     'gameloop: loop {
         // Per frame init
         let delta = instant.elapsed();
@@ -68,6 +81,14 @@ fn main() -> Result <(), Box<dyn Error>> {
         player.update(delta);
         if invaders.update(delta) {
             audio.play("move");
+        }
+        if player.check_hits(&mut invaders.army) {
+            audio.play("explode");
+        }
+        if invaders.army.len() == 0 {
+            invaders::render::clear(&mut stdout);
+            audio.play("win");
+            break 'gameloop;
         }
 
         // Draw

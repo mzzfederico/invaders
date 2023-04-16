@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::{NUM_COLS, NUM_ROWS, frame::Drawable, shot::Shot};
+use crate::{NUM_COLS, NUM_ROWS, frame::Drawable, shot::Shot, invaders::Invader};
 
 pub struct Player {
   x: usize,
@@ -29,6 +29,24 @@ impl Player {
   pub fn shoot(&mut self) -> bool {
     if self.shots.len() <= 2 {
       self.shots.push(Shot::new(self.x, self.y - 1));
+      true
+    } else {
+      false
+    }
+  }
+  pub fn check_hits(&mut self, army: &mut Vec<Invader>) -> bool {
+    let initial_army_length = army.len();
+    let mut current_army_length = army.len();
+
+    for shot in self.shots.iter_mut() {
+      army.retain(|invader| {
+        !(shot.x == invader.x && shot.y == invader.y)
+      });
+      if current_army_length != army.len() { shot.explode() }
+      current_army_length = army.len();
+    }
+
+    if current_army_length != initial_army_length {
       true
     } else {
       false
