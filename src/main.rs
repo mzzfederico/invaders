@@ -4,6 +4,7 @@ use invaders::{render, frame::{new_frame, Drawable}, player::Player, invaders::I
 use rusty_audio::Audio;
 
 fn main() -> Result <(), Box<dyn Error>> {
+    // Gets how many lines the player wants
     let args: Vec<String> = env::args().collect();
     let mut enemy_lines = 4;
     match args[1].parse::<u32>() {
@@ -17,6 +18,7 @@ fn main() -> Result <(), Box<dyn Error>> {
         }
     };
 
+    // Setting up sounds
     let mut audio = Audio::new();
     audio.add("explode", "explode.wav");
     audio.add("lose", "lose.wav");
@@ -85,9 +87,12 @@ fn main() -> Result <(), Box<dyn Error>> {
         if player.check_hits(&mut invaders.army) {
             audio.play("explode");
         }
-        if invaders.army.len() == 0 {
-            invaders::render::clear(&mut stdout);
+        if invaders.army.is_empty() {
             audio.play("win");
+            break 'gameloop;
+        }
+        if invaders.have_won() {
+            audio.play("lose");
             break 'gameloop;
         }
 

@@ -12,6 +12,7 @@ pub struct Invaders {
   pub army: Vec<Invader>,
   move_timer: Timer,
   direction: i32,
+  last_line: bool
 }
 
 impl Invaders {
@@ -32,8 +33,12 @@ impl Invaders {
       Self {
         army,
         move_timer: Timer::from_millis(2000),
-        direction: 1
+        direction: 1,
+        last_line: false
       }
+    }
+    pub fn have_won(&self) -> bool {
+      self.last_line
     }
     pub fn update(&mut self, delta: Duration) -> bool {
       self.move_timer.update(delta);
@@ -59,6 +64,10 @@ impl Invaders {
           self.move_timer = Timer::from_millis(new_duration as u64);
           for invader in self.army.iter_mut() {
             invader.y += 1;
+            if invader.y == NUM_ROWS - 1 {
+              self.last_line = true;
+              return true;
+            }
           }
         } else {
           for invader in self.army.iter_mut() {
